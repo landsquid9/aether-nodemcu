@@ -24,7 +24,7 @@ void setup()
 
   while(!connection)
   {
-    connection = ae.connectToAP("VM199584-2G", "uwbwgvbs");
+    connection = ae.connectToAP("SSID", "PASSWORD");
   }
   
   ae.connectToServer("Daniel", MODE_RECEIVE, DATA_PULSE);

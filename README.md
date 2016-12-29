@@ -1,1 +1,2 @@
-# connectivity-nodemcu
+# aether-nodemcu
+

@@ -21,6 +21,8 @@ Here is some example code. It is included in the library's example folder.
 
 By default, the log level is set to standard. The library does not initialise serial communication, however. You must either initialise the serial logger (Serial.begin(baudrate)) or set the log level to LOG_NONE.
 
+See aether-client.h for all the functions
+
 ```
 /*  This is a simple example that turns an LED on or off when it receives 
  *  a "pulse" message. A pulse is essentially an empty message; all that 

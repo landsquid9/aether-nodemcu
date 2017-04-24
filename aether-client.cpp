@@ -1,6 +1,8 @@
 #include "aether-client.h"
 
-AetherClient::AetherClient()
+AetherClient::AetherClient():
+	url("connectivity-92668.onmodulus.net"),
+	port(80)
 {
 	
 }
@@ -13,6 +15,16 @@ void AetherClient::loop()
 void AetherClient::setLogVerbosity(LOG_LEVEL level)
 {
 	log = level;
+}
+
+void AetherClient::setCustomUrl(char* u)
+{
+	url = u;
+}
+
+void AetherClient::setCustomPort(int p)
+{
+	port = p;
 }
 
 bool AetherClient::connectToAP(const char* name, const char* password, ulong wait)
@@ -72,7 +84,7 @@ bool AetherClient::connectToServer(const char* name, DATA_MODE mode, DATA_TYPE d
 	{
 		Serial.println("[AE:1] Connecting to Aether");
 	}
-	webSocket.begin("connectivity-92668.onmodulus.net", 80);
+	webSocket.begin(url, port);
 	
     webSocket.onEvent(std::bind(&AetherClient::webSocketEvent,
 								this,
@@ -110,33 +122,37 @@ void AetherClient::webSocketEvent(WStype_t type, uint8_t* payload, size_t len)
 			if(funcSet)
 			{
 				incoming = (char*)payload;
-				switch(dType)
+				if(incoming[0] != '_')
 				{
-					case(DATA_PULSE):
+					switch(dType)
 					{
-						pulseFunc();					
-					}
-					break;
-					case(DATA_BOOL):
-					{
-						bool b;
-						incoming == "true" ? b = true : b = false;
-						boolFunc(b);
-					}
-					break;
+						case(DATA_PULSE):
+						{
+							pulseFunc();					
+						}
+						break;
+						case(DATA_BOOL):
+						{
+							bool b;
+							incoming == "true" ? b = true : b = false;
+							boolFunc(b);
+						}
+						break;
 					
-					case(DATA_NUMBER):
-					{
-						floatFunc(incoming.toFloat());
-					}
-					break;
+						case(DATA_NUMBER):
+						{
+							floatFunc(incoming.toFloat());
+						}
+						break;
 					
-					case(DATA_STRING):
-					{
-						stringFunc(incoming.c_str());
+						case(DATA_STRING):
+						{
+							stringFunc(incoming.c_str());
+						}
+						break;
 					}
-					break;
 				}
+
 			}				
 		}
     }	
@@ -297,4 +313,9 @@ void AetherClient::receiveData(void (*f)(const char*))
 {
 	stringFunc = f;
 	funcSet = true;
+}
+
+void AetherClient::closeConnection()
+{
+	webSocket.disconnect();
 }

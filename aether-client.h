@@ -25,6 +25,7 @@ typedef unsigned int  uint;
  * Data mode represents whether this devide sends or receives information.
  * Data type represents the type of data this device sends or receives.
  */
+ 
 enum LOG_LEVEL
 {
 	LOG_NONE,
@@ -55,6 +56,12 @@ class AetherClient
 		 * is not necessary to call this
 		 */
 		void setLogVerbosity(LOG_LEVEL level);
+		
+		void setCustomUrl(char* u);
+		void setCustomPort(int p);
+		
+		
+		
 		/* Connect to a wireless network. Give it the name of the network, the
 		 * password, and an optional timeout value to say when to stop trying to
 		 * connect in milliseconds. Defaults to 30000 (30 seconds);
@@ -87,10 +94,17 @@ class AetherClient
 		void receiveData(void (*f)(float));
 		void receiveData(void (*f)(const char*));
 		
+		void closeConnection();
+		
 		
 	private:
+	
+	
 		/* How much to log to Serial? */
 		LOG_LEVEL log = LOG_STANDARD;
+		
+		char* url;
+		int port;
 		
 		/* Library objects for wifi connection and websocket connection */
 		ESP8266WiFiMulti wiFiMulti;

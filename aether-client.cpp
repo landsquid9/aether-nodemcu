@@ -1,10 +1,10 @@
 #include "aether-client.h"
 
 AetherClient::AetherClient():
-	url("connectivity-92668.onmodulus.net"),
+	url("aether-iot.herokuapp.com"),
 	port(80)
 {
-	
+
 }
 
 void AetherClient::loop()
@@ -33,24 +33,24 @@ bool AetherClient::connectToAP(const char* name, const char* password, ulong wai
 	{
 		Serial.print("[AE:1] Connecting to ");
 		Serial.println(name);
-	}		
-	
+	}
+
 	wiFiMulti.addAP(name, password);
-	
+
 	ulong curTime = millis();
 	ulong prevTime = curTime;
 	ulong delta = 0;
 	ulong timer = 0;
-	
+
 	uint counter = 1;
-	
-    while(wiFiMulti.run() != WL_CONNECTED) 
+
+    while(wiFiMulti.run() != WL_CONNECTED)
 	{
 		curTime = millis();
 		delta = curTime - prevTime;
 		timer += delta;
 		prevTime = curTime;
-		
+
 		if(log > LOG_NONE)
 		{
 			Serial.print("[AE:1] Connecting ");
@@ -58,20 +58,20 @@ bool AetherClient::connectToAP(const char* name, const char* password, ulong wai
 			Serial.println(" ...");
 			counter ++;
 		}
-		
+
         delay(1000);
 		if(timer >= wait)
 		{
 			if(log > LOG_NONE)
 			{
 				Serial.println("[AE:1] Could not connect to AP");
-			}			
+			}
 			return false;
 		}
-		
-		
+
+
     }
-	
+
 	return true;
 }
 
@@ -85,27 +85,27 @@ bool AetherClient::connectToServer(const char* name, DATA_MODE mode, DATA_TYPE d
 		Serial.println("[AE:1] Connecting to Aether");
 	}
 	webSocket.begin(url, port);
-	
+
     webSocket.onEvent(std::bind(&AetherClient::webSocketEvent,
 								this,
 								std::placeholders::_1,
-								std::placeholders::_2, 
+								std::placeholders::_2,
 								std::placeholders::_3));
 }
 
 void AetherClient::webSocketEvent(WStype_t type, uint8_t* payload, size_t len)
 {
-    switch(type) 
+    switch(type)
     {
         case WStype_DISCONNECTED:
-		
+
 			if(log != LOG_NONE)
 			{
 				Serial.println("[AE:1] Disconnected!");
 			}
-            
+
             break;
-			
+
         case WStype_CONNECTED:
         {
 				if(log != LOG_NONE)
@@ -114,48 +114,58 @@ void AetherClient::webSocketEvent(WStype_t type, uint8_t* payload, size_t len)
 				}
                 configure();
         }
-		
+
         break;
-		
+
         case WStype_TEXT:
         {
-			if(funcSet)
+			incoming = (char*)payload;
+			Serial.println("incoming");
+			Serial.println(incoming);
+			/* Check if sys message */
+			if(incoming[0] == '_')
 			{
-				incoming = (char*)payload;
-				if(incoming[0] != '_')
+				webSocket.sendTXT(incoming);
+			}
+			else if(funcSet)
+			{
+
+
+				Serial.println(incoming);
+
+				switch(dType)
 				{
-					switch(dType)
+					case(DATA_PULSE):
 					{
-						case(DATA_PULSE):
-						{
-							pulseFunc();					
-						}
-						break;
-						case(DATA_BOOL):
-						{
-							bool b;
-							incoming == "true" ? b = true : b = false;
-							boolFunc(b);
-						}
-						break;
-					
-						case(DATA_NUMBER):
-						{
-							floatFunc(incoming.toFloat());
-						}
-						break;
-					
-						case(DATA_STRING):
-						{
-							stringFunc(incoming.c_str());
-						}
-						break;
+						pulseFunc();
 					}
+					break;
+					case(DATA_BOOL):
+					{
+						bool b;
+						incoming == "true" ? b = true : b = false;
+						boolFunc(b);
+					}
+					break;
+
+					case(DATA_NUMBER):
+					{
+						floatFunc(incoming.toFloat());
+					}
+					break;
+
+					case(DATA_STRING):
+					{
+						stringFunc(incoming.c_str());
+					}
+					break;
 				}
 
-			}				
+
+
+			}
 		}
-    }	
+    }
 }
 
 void AetherClient::configure()
@@ -187,8 +197,8 @@ void AetherClient::configure()
 			}
 		}
 		break;
-		
-		
+
+
 		case MODE_RECEIVE:
 		{
 			m1 = "\"receive\",";
@@ -200,12 +210,12 @@ void AetherClient::configure()
 		}
 		break;
 	}
-	
 
-	
+
+
 	strcat(configuration, m1);
 	strcat(configuration, "\"dataType\":");
-	
+
 	char *m2;
 	switch(dType)
 	{
@@ -250,18 +260,18 @@ void AetherClient::configure()
 		}
 		break;
 	}
-	
 
-	
+
+
 	strcat(configuration, m2);
-	
+
 	if(log > LOG_STANDARD)
 	{
 		Serial.print("[AE:2] Configuration message: ");
-		Serial.println(configuration);			
+		Serial.println(configuration);
 	}
 
-  
+
 	webSocket.sendTXT(configuration);
 }
 

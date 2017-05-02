@@ -97,41 +97,50 @@ void AetherClient::webSocketEvent(WStype_t type, uint8_t* payload, size_t len)
 {
     switch(type)
     {
+		Serial.println(type);
         case WStype_DISCONNECTED:
+		{
 
 			if(log != LOG_NONE)
 			{
 				Serial.println("[AE:1] Disconnected!");
 			}
 
-            break;
-
+            //break;
+		}
         case WStype_CONNECTED:
-        {
+		{
 				if(log != LOG_NONE)
 				{
 					Serial.println("[AE:1] Connected to Aether");
 				}
                 configure();
-        }
-
-        break;
+				//break;
+		}
 
         case WStype_TEXT:
-        {
+		{
 			incoming = (char*)payload;
-			Serial.println("incoming");
-			Serial.println(incoming);
+			if(log > LOG_STANDARD)
+			{
+				Serial.println("incoming");
+				Serial.println(incoming);
+			}
 			/* Check if sys message */
 			if(incoming[0] == '_')
 			{
+				if(log > LOG_STANDARD)
+				{
+					Serial.println("sending");
+				}
 				webSocket.sendTXT(incoming);
 			}
 			else if(funcSet)
 			{
-
-
-				Serial.println(incoming);
+				if(log > LOG_STANDARD)
+				{
+					Serial.println(incoming);
+				}
 
 				switch(dType)
 				{
@@ -161,10 +170,10 @@ void AetherClient::webSocketEvent(WStype_t type, uint8_t* payload, size_t len)
 					break;
 				}
 
-
-
 			}
+
 		}
+
     }
 }
 
@@ -225,7 +234,7 @@ void AetherClient::configure()
 			if(log > LOG_NONE)
 			{
 				Serial.print("[AE:1] - ");
-				Serial.println("Pulse");
+				Serial.println("pulse");
 			}
 		}
 		break;
@@ -235,7 +244,7 @@ void AetherClient::configure()
 			if(log > LOG_NONE)
 			{
 				Serial.print("[AE:1] - ");
-				Serial.println("Boolean");
+				Serial.println("boolean");
 			}
 		}
 		break;
@@ -245,17 +254,17 @@ void AetherClient::configure()
 			if(log > LOG_NONE)
 			{
 				Serial.print("[AE:1] - ");
-				Serial.println("Number");
+				Serial.println("number");
 			}
 		}
 		break;
 		case DATA_STRING:
 		{
-			m2 = "\"string\"}}";
+			m2 = "\"text\"}}";
 			if(log > LOG_NONE)
 			{
 				Serial.print("[AE:1] - ");
-				Serial.println("String");
+				Serial.println("text");
 			}
 		}
 		break;

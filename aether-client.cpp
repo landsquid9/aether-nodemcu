@@ -120,56 +120,59 @@ void AetherClient::webSocketEvent(WStype_t type, uint8_t* payload, size_t len)
 
         case WStype_TEXT:
 		{
-			incoming = (char*)payload;
-			if(log > LOG_STANDARD)
+			if(len > 0)
 			{
-				Serial.println("incoming");
-				Serial.println(incoming);
-			}
-			/* Check if sys message */
-			if(incoming[0] == '_')
-			{
+				incoming = (char*)payload;
 				if(log > LOG_STANDARD)
 				{
-					Serial.println("sending");
-				}
-				webSocket.sendTXT(incoming);
-			}
-			else if(funcSet)
-			{
-				if(log > LOG_STANDARD)
-				{
+					Serial.println("incoming");
 					Serial.println(incoming);
 				}
-
-				switch(dType)
+				/* Check if sys message */
+				if(incoming[0] == '_')
 				{
-					case(DATA_PULSE):
+					if(log > LOG_STANDARD)
 					{
-						pulseFunc();
+						Serial.println("sending");
 					}
-					break;
-					case(DATA_BOOL):
-					{
-						bool b;
-						incoming == "true" ? b = true : b = false;
-						boolFunc(b);
-					}
-					break;
-
-					case(DATA_NUMBER):
-					{
-						floatFunc(incoming.toFloat());
-					}
-					break;
-
-					case(DATA_STRING):
-					{
-						stringFunc(incoming.c_str());
-					}
-					break;
+					webSocket.sendTXT(incoming);
 				}
+				else if(funcSet)
+				{
+					if(log > LOG_STANDARD)
+					{
+						Serial.println(incoming);
+					}
 
+					switch(dType)
+					{
+						case(DATA_PULSE):
+						{
+							pulseFunc();
+						}
+						break;
+						case(DATA_BOOL):
+						{
+							bool b;
+							incoming == "true" ? b = true : b = false;
+							boolFunc(b);
+						}
+						break;
+
+						case(DATA_NUMBER):
+						{
+							floatFunc(incoming.toFloat());
+						}
+						break;
+
+						case(DATA_STRING):
+						{
+							stringFunc(incoming.c_str());
+						}
+						break;
+					}
+
+				}
 			}
 
 		}
